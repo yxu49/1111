@@ -101,12 +101,12 @@ void timer_sleep(int64_t ticks)
   {
     return;
   }
-  int64_t start = timer_ticks ();
+  // int64_t start = timer_ticks ();
 
   ASSERT(intr_get_level() == INTR_ON);
   enum intr_level old_level = intr_disable();/*put it to sleep*/
   struct thread *t = thread_current();
-  t->time_wakeup = ticks+ start;
+  t->time_wakeup = ticks;
   thread_block();
   intr_set_level(old_level);
 }
@@ -207,9 +207,9 @@ static void
 timer_interrupt(struct intr_frame *args UNUSED)
 {
   ticks++;
-  enum intr_level old_level=intr_disable();/* intr off*/
+  // enum intr_level old_level=intr_disable();/* intr off*/
   thread_foreach(check_blocked, NULL);
-  intr_set_level(old_level);/*recover to origal intr_level*/
+  // intr_set_level(old_level);/*recover to origal intr_level*/
   thread_tick();
 }
 
