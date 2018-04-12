@@ -189,7 +189,7 @@ void timer_print_stats(void)
 }
 
 /*to check if the thread is blocked*/
-void check_blocked(struct thread *t, void *aux UNUSED)
+void check_sleep_thread(struct thread *t, void *aux UNUSED)
 {
   if (t->status == THREAD_BLOCKED && t->time_wakeup > 0)
   {
@@ -207,7 +207,7 @@ static void
 timer_interrupt(struct intr_frame *args UNUSED)
 {
   ticks++;
-  thread_foreach(check_blocked, NULL);
+  thread_foreach(check_sleep_thread, NULL);
   thread_tick();
 }
 
