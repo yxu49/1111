@@ -1,0 +1,28 @@
+TOTAL TESTING SCORE: 85.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY BY TEST SET
+
+Test Set                                      Pts Max  % Ttl  % Max
+--------------------------------------------- --- --- ------ ------
+tests/threads/Rubric.alarm                     85/100  85.0%/100.0%
+--------------------------------------------- --- --- ------ ------
+Total                                                  85.0%/100.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY OF INDIVIDUAL TESTS
+
+Functionality and robustness of alarm clock (tests/threads/Rubric.alarm):
+	  ** 0/ 5 tests/threads/alarm-single
+	  ** 0/ 5 tests/threads/alarm-multiple
+	  ** 0/ 5 tests/threads/alarm-simultaneous
+	     5/ 5 tests/threads/alarm-zero
+	     5/ 5 tests/threads/alarm-negative
+	    75/75 tests/threads/alarm-efficient
+
+	- Section summary.
+	      3/  6 tests passed
+	     85/100 points subtotal
+
