@@ -1,0 +1,6 @@
+1. For the first part, we need to implement an ordered ready list. 
+So firstly, I tried to find out the place that a thread is been put into ready_list.
+After observation, I find that, there are three place that used list_push_back() to ready_list.
+thread_unblock(), init_thread(), thread_yield(). Therefore, I choose to modify the list operation 
+in this function. Then I look for the function in list.h, and find that I can use list_insert_ordered() to 
+insert new thread with order. Then I can build a function to return true or false to judge if the new 
