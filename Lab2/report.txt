@@ -6,3 +6,5 @@ in this function. Then I look for the function in list.h, and find that I can us
 insert new thread with order. Then I can build a function to return true or false to judge if the new 
 
 1. list_insert_ordered(), used to take place of list_push_back(). to insert a thread with order.
+2. bool thread_cmp_priority(), compare the priority of two threads, and return true, if the first 
+priority is larger than the second one. After this, we can have a ordered priority list of thread.
