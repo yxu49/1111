@@ -65,10 +65,7 @@ semaphore_init(struct semaphore *sema, unsigned value)
  * interrupts disabled, but if it sleeps then the next scheduled
  * thread will probably turn interrupts back on. 
  */
-bool sema_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
-{
-    return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
-}
+
 void
 semaphore_down(struct semaphore *sema)
 {
@@ -77,7 +74,7 @@ semaphore_down(struct semaphore *sema)
 
     enum intr_level old_level = intr_disable();
     while (sema->value == 0) {
-    list_insert_ordered(&sema->waiters, &thread_current()->elem, (list_less_func *)&sema_cmp_priority, NULL);
+    list_insert_ordered(&sema->waiters, &thread_current()->elem, (list_less_func *)&thread_cmp_priority, NULL);
         // list_push_back(&sema->waiters, &thread_current()->elem);
         thread_block();
     }
@@ -125,6 +122,7 @@ semaphore_up(struct semaphore *semaphore)
 
     old_level = intr_disable();
     if (!list_empty(&semaphore->waiters)) {
+        list_sort (&sema->waiters, thread_cmp_priority, NULL);
         thread_unblock(list_entry(
             list_pop_front(&semaphore->waiters), struct thread, elem));
     }
