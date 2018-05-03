@@ -96,6 +96,13 @@ condvar_wait(struct condvar *cond, struct lock *lock)
  * make sense to try to signal a condition variable within an
  * interrupt handler. 
  */
+bool
+cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+  struct semaphore_elem *sa = list_entry (a, struct semaphore_elem, elem);
+  struct semaphore_elem *sb = list_entry (b, struct semaphore_elem, elem);
+  return list_entry(list_front(&sa->semaphore.waiters), struct thread, elem)->priority > list_entry(list_front(&sb->semaphore.waiters), struct thread, elem)->priority;
+}
 void
 condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
 {
@@ -105,6 +112,8 @@ condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
     ASSERT(lock_held_by_current_thread(lock));
 
     if (!list_empty(&cond->waiters)) {
+        list_sort (&cond->waiters, cond_sema_cmp_priority, NULL);
+
         semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore, elem));
     }
 }
