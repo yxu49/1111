@@ -272,7 +272,8 @@ void thread_block(void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+bool
+thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
