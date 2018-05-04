@@ -88,7 +88,9 @@ struct thread {
     uint8_t *stack; /* Saved stack pointer. */
     int priority; /* Priority. */
     struct list_elem allelem; /* List element for all threads list. */
-
+    int base_priority;
+    struct list locks;
+    struct lock *lock_waiting;
     /* Shared between thread.c and sempahore.c. */
     struct list_elem elem; /* List element. */
 
