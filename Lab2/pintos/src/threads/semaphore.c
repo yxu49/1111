@@ -126,7 +126,7 @@ semaphore_up(struct semaphore *semaphore)
 
     old_level = intr_disable();
     if (!list_empty(&semaphore->waiters)) {
-        list_sort (&sema->waiters, thread_cmp_priority, NULL);
+        list_sort (&semaphore->waiters, thread_cmp_priority, NULL);
         thread_unblock(list_entry(
             list_pop_front(&semaphore->waiters), struct thread, elem));
     }
