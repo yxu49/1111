@@ -274,17 +274,18 @@ void thread_block(void)
    update other data. */
 bool
 thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
-{   
-    bool result;
-    int newp= list_entry(new,struct thread, elem);
-    int oldp= list_entry(old,struct thread, elem);
-    if (newp>oldp){
-        result=true;
-    }
-    else {
-    result=false;
-    }
-    return result;
+{
+    // bool result;
+    // int newp= list_entry(new,struct thread, elem);
+    // int oldp= list_entry(old,struct thread, elem);
+    // if (newp>oldp){
+    //     result=true;
+    // }
+    // else {
+    // result=false;
+    // }
+    // return result;
+    return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
 void thread_unblock(struct thread *t)
 {
