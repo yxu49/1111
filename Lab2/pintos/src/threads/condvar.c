@@ -71,6 +71,24 @@ condvar_init(struct condvar *cond)
  * interrupts disabled, but interrupts will be turned back on if
  * we need to sleep. 
  */
+bool
+cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+    bool result;
+    printf("test\n");
+  struct semaphore_elem *sema_a = list_entry (a, struct semaphore_elem, elem);
+  struct semaphore_elem *sema_b = list_entry (b, struct semaphore_elem, elem);
+  int sema_a_p=list_entry(list_front(&sema_a->waiters),struct thread,elem)->priority;
+  int sema_b_p=list_entry(list_front(&sema_b->waiters),struct thread,elem)->priority;
+  if (sema_a_p>sema_b_p){
+      result=true;
+  }
+  else
+  {
+      result=false;
+  }
+  return result;
+}
 void
 condvar_wait(struct condvar *cond, struct lock *lock)
 {
@@ -82,6 +100,9 @@ condvar_wait(struct condvar *cond, struct lock *lock)
     struct semaphore waiter;
     semaphore_init(&waiter, 0);
     list_push_back(&cond->waiters, &waiter.elem);
+    
+    // list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)cond_sema_cmp_priority, NULL);
+    
     lock_release(lock);
     semaphore_down(&waiter);
     lock_acquire(lock);
@@ -96,6 +117,7 @@ condvar_wait(struct condvar *cond, struct lock *lock)
  * make sense to try to signal a condition variable within an
  * interrupt handler. 
  */
+
 void
 condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
 {
@@ -105,6 +127,8 @@ condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
     ASSERT(lock_held_by_current_thread(lock));
 
     if (!list_empty(&cond->waiters)) {
+        list_sort (&cond->waiters, cond_sema_cmp_priority, NULL);
+
         semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore, elem));
     }
 }
