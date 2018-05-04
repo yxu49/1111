@@ -127,7 +127,7 @@ condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
     if (!list_empty(&cond->waiters)) {
         list_sort (&cond->waiters, cond_sema_cmp_priority, NULL);
 
-        semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore, elem));
+        semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore_elem, elem)->semaphore);
     }
 }
 
