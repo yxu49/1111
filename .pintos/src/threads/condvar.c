@@ -99,9 +99,19 @@ condvar_wait(struct condvar *cond, struct lock *lock)
 bool
 cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
 {
-  struct semaphore_elem *sa = list_entry (a, struct semaphore_elem, elem);
-  struct semaphore_elem *sb = list_entry (b, struct semaphore_elem, elem);
-  return list_entry(list_front(&sa->semaphore.waiters), struct thread, elem)->priority > list_entry(list_front(&sb->semaphore.waiters), struct thread, elem)->priority;
+    bool result;
+  struct semaphore_elem *sema_a = list_entry (a, struct semaphore_elem, elem);
+  struct semaphore_elem *sema_b = list_entry (b, struct semaphore_elem, elem);
+  int sema_a_p=list_entry(list_front(&sema_a->semaphore->waiter),struct thread,elem)->priority;
+  int sema_b_p=list_entry(list_front(&sema_b->semaphore->waiter),struct thread,elem)->priority;
+  if (sema_a_p>sema_b_p){
+      result=true;
+  }
+  else
+  {
+      result=false;
+  }
+  return result;
 }
 void
 condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
