@@ -98,8 +98,8 @@ condvar_wait(struct condvar *cond, struct lock *lock)
 
     struct semaphore waiter;
     semaphore_init(&waiter, 0);
-    //list_push_back(&cond->waiters, &waiter.elem);
-     list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)cond_sema_cmp_priority, NULL);
+    list_push_back(&cond->waiters, &waiter.elem);
+    // list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)cond_sema_cmp_priority, NULL);
     
     lock_release(lock);
     semaphore_down(&waiter);
@@ -127,7 +127,7 @@ condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
     if (!list_empty(&cond->waiters)) {
         list_sort (&cond->waiters, cond_sema_cmp_priority, NULL);
 
-        semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore_elem, elem)->semaphore);
+        semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore, elem));
     }
 }
 
