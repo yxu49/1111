@@ -65,10 +65,10 @@ semaphore_init(struct semaphore *sema, unsigned value)
  * interrupts disabled, but if it sleeps then the next scheduled
  * thread will probably turn interrupts back on. 
  */
-bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
-{
-    return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
-}
+// bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+// {
+//     return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
+// }
 
 void
 semaphore_down(struct semaphore *sema)
