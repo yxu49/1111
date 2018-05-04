@@ -239,7 +239,8 @@ tid_t thread_create(const char *name, int priority,
 
     /* Add to run queue. */
     thread_unblock(t);
-    if (thread_current()->priority<priority){
+    if (thread_current()->priority < priority)
+    {
         thread_yield();
     }
     return tid;
@@ -353,8 +354,8 @@ void thread_yield(void)
     old_level = intr_disable();
     if (cur != idle_thread)
         // list_push_back(&ready_list, &cur->elem);
-    list_insert_ordered(&ready_list, &cur->elem, (list_less_func *)&thread_cmp_priority, NULL);
-        
+        list_insert_ordered(&ready_list, &cur->elem, (list_less_func *)&thread_cmp_priority, NULL);
+
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);
@@ -507,7 +508,6 @@ init_thread(struct thread *t, const char *name, int priority)
     t->magic = THREAD_MAGIC;
     // list_push_back(&all_list, &t->allelem);
     list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&thread_cmp_priority, NULL);
-    
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
