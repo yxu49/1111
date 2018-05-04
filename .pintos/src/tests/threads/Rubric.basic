@@ -1,5 +1,0 @@
-Basic: Priority based ready queue:
-20	alarm-priority
-10	priority-preempt
-5	priority-change
-5	priority-fifo
