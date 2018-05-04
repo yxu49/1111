@@ -71,31 +71,6 @@ condvar_init(struct condvar *cond)
  * interrupts disabled, but interrupts will be turned back on if
  * we need to sleep. 
  */
-void
-condvar_wait(struct condvar *cond, struct lock *lock)
-{
-    ASSERT(cond != NULL);
-    ASSERT(lock != NULL);
-    ASSERT(!intr_context());
-    ASSERT(lock_held_by_current_thread(lock));
-
-    struct semaphore waiter;
-    semaphore_init(&waiter, 0);
-    list_push_back(&cond->waiters, &waiter.elem);
-    lock_release(lock);
-    semaphore_down(&waiter);
-    lock_acquire(lock);
-}
-
-/* 
- * If any threads are waiting on COND(protected by LOCK), then
- * this function signals one of them to wake up from its wait.
- * LOCK must be held before calling this function.
- *
- * An interrupt handler cannot acquire a lock, so it does not
- * make sense to try to signal a condition variable within an
- * interrupt handler. 
- */
 bool
 cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
 {
@@ -113,6 +88,34 @@ cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, vo
   }
   return result;
 }
+void
+condvar_wait(struct condvar *cond, struct lock *lock)
+{
+    ASSERT(cond != NULL);
+    ASSERT(lock != NULL);
+    ASSERT(!intr_context());
+    ASSERT(lock_held_by_current_thread(lock));
+
+    struct semaphore waiter;
+    semaphore_init(&waiter, 0);
+    list_push_back(&cond->waiters, &waiter.elem);
+    list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)cond_sema_cmp_priority, NULL);
+    
+    lock_release(lock);
+    semaphore_down(&waiter);
+    lock_acquire(lock);
+}
+
+/* 
+ * If any threads are waiting on COND(protected by LOCK), then
+ * this function signals one of them to wake up from its wait.
+ * LOCK must be held before calling this function.
+ *
+ * An interrupt handler cannot acquire a lock, so it does not
+ * make sense to try to signal a condition variable within an
+ * interrupt handler. 
+ */
+
 void
 condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
 {
