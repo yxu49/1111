@@ -3,8 +3,20 @@ So firstly, I tried to find out the place that a thread is been put into ready_l
 After observation, I find that, there are three place that used list_push_back() to ready_list.
 thread_unblock(), init_thread(), thread_yield(). Therefore, I choose to modify the list operation 
 in this function. Then I look for the function in list.h, and find that I can use list_insert_ordered() to 
-insert new thread with order. Then I can build a function to return true or false to judge if the new 
+insert new thread with order. Then I can build a function to return true or false to judge if the new one's priority
+is larger or smaller.
 
-1. list_insert_ordered(), used to take place of list_push_back(). to insert a thread with order.
-2. bool thread_cmp_priority(), compare the priority of two threads, and return true, if the first 
-priority is larger than the second one. After this, we can have a ordered priority list of thread.
+1. list_insert_ordered():
+    used to take place of list_push_back(). to insert a thread with order.
+2. bool thread_cmp_priority():
+    compare the priority of two threads, and return true, if the first 
+    priority is larger than the second one. After this, we can have a ordered priority list of thread.
+
+3. bool sema_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED) 
+    the same implement as thread_cmp_priority(), used to make a sorted waiter_list.
+
+4. bool cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+    compare the priority of head of two list of semaphore(struct list waiters; /* List of semaphore_elems */), 
+    used to sort waiter_list for condvar.
+5.
+
