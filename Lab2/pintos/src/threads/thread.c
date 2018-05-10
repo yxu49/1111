@@ -272,20 +272,49 @@ void thread_block(void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-bool
-thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result;
-    int newp= list_entry(new,struct thread, elem)->priority;
-    int oldp= list_entry(old,struct thread, elem)->priority;
-    if (newp>oldp){
-        result=true;
+    int newp = list_entry(new, struct thread, elem)->priority;
+    int oldp = list_entry(old, struct thread, elem)->priority;
+    if (newp > oldp)
+    {
+        result = true;
     }
-    else {
-    result=false;
+    else
+    {
+        result = false;
     }
     return result;
     // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
+}
+void thread_hold_lock(struct lock *lock)
+{
+    intr_disable();
+    list_insert_ordered(&thread_current()->locks, &lock->elem, lock_cmp_priority, NULL);
+
+    if (lock->max_priority > thread_current()->priority)
+    {
+        thread_current()->priority = lock->max_priority;
+        thread_yield();
+    }
+
+    intr_enable();
+}
+bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+{
+    bool result;
+    int new_p = list_entry(new, struct lock, elem)->max_priority;
+    int old_p = list_entry(old, struct lock, elem)->max_priority;
+    if (new_p > old_p)
+    {
+        result = true;
+    }
+    else
+    {
+        result = false;
+    }
+    return result;
 }
 void thread_update_priority(struct thread *t)
 {
