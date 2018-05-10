@@ -137,14 +137,14 @@ void thread_priority_donate(struct thread *t)
     if (t->status == THREAD_READY)
     {
         list_remove(&t->elem);
-        list_insert_ordered(&ready_list, &t->elem, thread_cmp_priority, NULL);
+        list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_cmp_priority, NULL);
     }
     // intr_set_level(old_level);
     intr_enable();
 }
-bool lock_cmp_priority(const struct list_elem *new, const struct *old, void *aux UNUSED)
+bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
-    bool result;
+    bool result; 
     int new_p = list_entry(new, struct lock, elem)->max_priority;
     int old_p = list_entry(old, struct lock, elem)->max_priority;
     if (new_p > old_p)
