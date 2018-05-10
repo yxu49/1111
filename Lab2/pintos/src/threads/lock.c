@@ -131,14 +131,22 @@ bool lock_try_acquire(struct lock *lock)
     return success;
 }
 
-
-void thread_remove_lock(struct lock *l)
+bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
-    intr_disable();
-    list_remove(&l->elem);
-    thread_update_priority(thread_current());
-    intr_enable();
+    bool result;
+    int new_p = list_entry(new, struct lock, elem)->max_priority;
+    int old_p = list_entry(old, struct lock, elem)->max_priority;
+    if (new_p > old_p)
+    {
+        result = true;
+    }
+    else
+    {
+        result = false;
+    }
+    return result;
 }
+
 
 
 /* 

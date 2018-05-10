@@ -127,7 +127,7 @@ void thread_init(void)
     lock_init(&tid_lock);
     list_init(&ready_list);
     list_init(&all_list);
-
+    
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
     init_thread(initial_thread, "main", PRI_DEFAULT);
@@ -288,21 +288,7 @@ bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *ol
     return result;
     // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
-bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
-{
-    bool result;
-    int new_p = list_entry(new, struct lock, elem)->max_priority;
-    int old_p = list_entry(old, struct lock, elem)->max_priority;
-    if (new_p > old_p)
-    {
-        result = true;
-    }
-    else
-    {
-        result = false;
-    }
-    return result;
-}
+
 void thread_hold_lock(struct lock *lock)
 {
     intr_disable();
@@ -346,7 +332,13 @@ void thread_priority_donate(struct thread *t)
     // intr_set_level(old_level);
     intr_enable();
 }
-
+void thread_remove_lock(struct lock *l)
+{
+    intr_disable();
+    list_remove(&l->elem);
+    thread_update_priority(thread_current());
+    intr_enable();
+}
 void thread_unblock(struct thread *t)
 {
     enum intr_level old_level;
@@ -591,6 +583,9 @@ init_thread(struct thread *t, const char *name, int priority)
     t->stack = (uint8_t *)t + PGSIZE;
     t->priority = priority;
     t->magic = THREAD_MAGIC;
+    t->base_priority=priority;
+    list_init(&t->locks);
+    t->lock_waiting=NULL;
     // list_push_back(&all_list, &t->allelem);
     list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&thread_cmp_priority, NULL);
 }
