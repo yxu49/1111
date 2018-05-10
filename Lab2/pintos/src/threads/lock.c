@@ -130,33 +130,8 @@ bool lock_try_acquire(struct lock *lock)
     }
     return success;
 }
-bool
-thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
-{
-    bool result;
-    int newp= list_entry(new,struct thread, elem)->priority;
-    int oldp= list_entry(old,struct thread, elem)->priority;
-    if (newp>oldp){
-        result=true;
-    }
-    else {
-    result=false;
-    }
-    return result;
-    // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
-}
-void thread_priority_donate(struct thread *t)
-{
-    intr_disable();
-    thread_update_priority(t);
-    if (t->status == THREAD_READY)
-    {
-        list_remove(&t->elem);
-        list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_cmp_priority, NULL);
-    }
-    // intr_set_level(old_level);
-    intr_enable();
-}
+
+
 bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result; 
@@ -209,13 +184,7 @@ void thread_update_priority(struct thread *t)
  * make sense to try to release a lock within an interrupt
  * handler. 
  */
-void thread_remove_lock(struct lock *l)
-{
-    intr_disable();
-    list_remove(&l->elem);
-    thread_update_priority(thread_current());
-    intr_enable();
-}
+
 void lock_release(struct lock *lock)
 {
     ASSERT(lock != NULL);

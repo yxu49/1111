@@ -287,6 +287,25 @@ thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, vo
     return result;
     // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
+void thread_priority_donate(struct thread *t)
+{
+    intr_disable();
+    thread_update_priority(t);
+    if (t->status == THREAD_READY)
+    {
+        list_remove(&t->elem);
+        list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_cmp_priority, NULL);
+    }
+    // intr_set_level(old_level);
+    intr_enable();
+}
+void thread_remove_lock(struct lock *l)
+{
+    intr_disable();
+    list_remove(&l->elem);
+    thread_update_priority(thread_current());
+    intr_enable();
+}
 void thread_unblock(struct thread *t)
 {
     enum intr_level old_level;
