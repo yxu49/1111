@@ -147,8 +147,6 @@ bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old,
     return result;
 }
 
-
-
 /* 
  * Releases LOCK, which must be owned by the current thread.
  *
@@ -161,13 +159,12 @@ void lock_release(struct lock *lock)
 {
     ASSERT(lock != NULL);
     ASSERT(lock_held_by_current_thread(lock));
-
-    lock->holder = NULL;
-    semaphore_up(&lock->semaphore);
     if (!thread_mlfqs)
     {
         thread_remove_lock(lock);
     }
+    lock->holder = NULL;
+    semaphore_up(&lock->semaphore);
 }
 
 /* 
