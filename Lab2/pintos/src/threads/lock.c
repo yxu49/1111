@@ -132,7 +132,13 @@ bool lock_try_acquire(struct lock *lock)
 }
 
 
-
+void thread_remove_lock(struct lock *l)
+{
+    intr_disable();
+    list_remove(&l->elem);
+    thread_update_priority(thread_current());
+    intr_enable();
+}
 
 
 /* 

@@ -346,13 +346,7 @@ void thread_priority_donate(struct thread *t)
     // intr_set_level(old_level);
     intr_enable();
 }
-void thread_remove_lock(struct lock *l)
-{
-    intr_disable();
-    list_remove(&l->elem);
-    thread_update_priority(thread_current());
-    intr_enable();
-}
+
 void thread_unblock(struct thread *t)
 {
     enum intr_level old_level;
