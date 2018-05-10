@@ -306,7 +306,7 @@ bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old,
 void thread_hold_lock(struct lock *lock)
 {
     intr_disable();
-    list_insert_ordered(&thread_current()->locks, &lock->elem, lock_cmp_priority, NULL);
+    list_insert_ordered(&thread_current()->locks, &lock->elem, (list_less_func *)lock_cmp_priority, NULL);
 
     if (lock->max_priority > thread_current()->priority)
     {
