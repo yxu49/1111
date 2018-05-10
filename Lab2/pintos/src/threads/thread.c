@@ -288,19 +288,6 @@ bool thread_cmp_priority(const struct list_elem *new, const struct list_elem *ol
     return result;
     // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
-void thread_hold_lock(struct lock *lock)
-{
-    intr_disable();
-    list_insert_ordered(&thread_current()->locks, &lock->elem, lock_cmp_priority, NULL);
-
-    if (lock->max_priority > thread_current()->priority)
-    {
-        thread_current()->priority = lock->max_priority;
-        thread_yield();
-    }
-
-    intr_enable();
-}
 bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result;
@@ -316,6 +303,20 @@ bool lock_cmp_priority(const struct list_elem *new, const struct list_elem *old,
     }
     return result;
 }
+void thread_hold_lock(struct lock *lock)
+{
+    intr_disable();
+    list_insert_ordered(&thread_current()->locks, &lock->elem, lock_cmp_priority, NULL);
+
+    if (lock->max_priority > thread_current()->priority)
+    {
+        thread_current()->priority = lock->max_priority;
+        thread_yield();
+    }
+
+    intr_enable();
+}
+
 void thread_update_priority(struct thread *t)
 {
     intr_disable();
