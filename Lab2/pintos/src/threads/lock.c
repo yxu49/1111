@@ -184,7 +184,8 @@ void thread_update_priority(struct thread *t)
     }
 
     t->priority = max_priority;
-    intr_set_level(old_level);
+    // intr_set_level(old_level);
+    intr_enable();
 }
 /* 
  * Releases LOCK, which must be owned by the current thread.
