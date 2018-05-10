@@ -72,15 +72,15 @@ condvar_init(struct condvar *cond)
  * we need to sleep. 
  */
 bool
-cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+cond_sema_cmp_priority (const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result;
 
-  struct semaphore *sema_a = list_entry (a, struct semaphore, elem);
-  struct semaphore *sema_b = list_entry (b, struct semaphore, elem);
-  int sema_a_p=list_entry(list_front(&sema_a->waiters),struct thread,elem)->priority;
-  int sema_b_p=list_entry(list_front(&sema_b->waiters),struct thread,elem)->priority;
-  if (sema_a_p>sema_b_p){
+  struct semaphore *sema_new = list_entry (new, struct semaphore, elem);
+  struct semaphore *sema_old = list_entry (old, struct semaphore, elem);
+  int sema_new_p=list_entry(list_front(&sema_new->waiters),struct thread,elem)->priority;
+  int sema_old_p=list_entry(list_front(&sema_old->waiters),struct thread,elem)->priority;
+  if (sema_new_p>sema_old_p){
       result=true;
   }
   else

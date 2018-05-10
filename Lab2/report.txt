@@ -4,7 +4,13 @@ After observation, I find that, there are three place that used list_push_back()
 thread_unblock(), init_thread(), thread_yield(). Therefore, I choose to modify the list operation 
 in this function. Then I look for the function in list.h, and find that I can use list_insert_ordered() to 
 insert new thread with order. Then I can build a function to return true or false to judge if the new one's priority
-is larger or smaller.
+is larger or smaller.Add a condition in thread_create() to check if the priority is lower than the current 
+thread, then we used thread_yield() to hold this thread. For priority-sema and priority-condv, I implemented 
+two priority compare function to make sorted lists. For condv, we need to compare the head of two semaphore list,
+which to pick a thread with highest priority. For sema, I choose to modify the list_push_back() to list_insert_ordered,
+and choose to use list_sort() to sort the waiter_list.
+
+
 
 1. list_insert_ordered():
     used to take place of list_push_back(). to insert a thread with order.
