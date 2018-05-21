@@ -246,6 +246,35 @@ tid_t thread_create(const char *name, int priority,
     return tid;
 }
 
+void thread_donate_priority(struct thread *t)
+{
+    enum intr_level old_level = intr_disable();
+    thread_update_priority(t);
+
+    if (t->status == THREAD_READY)
+    {
+        list_remove(&t->elem);
+        list_insert_ordered(&ready_list, &t->elem, thread_compare_priority, NULL);
+    }
+    intr_set_level(old_level);
+}
+void thread_update_priority(struct thread *t)
+{
+    enum intr_level old_level = intr_disable();
+    int max_priority = t->base_priority;
+    int lock_priority;
+
+    if (!list_empty(&t->locks_priority))
+    {
+        list_sort(&t->locks_priority, lock_compare_priority, NULL);
+        lock_priority = list_entry(list_front(&t->locks_priority), struct lock, elem)->max_priority;
+        if (lock_priority > max_priority)
+            max_priority = lock_priority;
+    }
+
+    t->priority = max_priority;
+    intr_set_level(old_level);
+}
 /* 
  * Puts the current thread to sleep.  It will not be scheduled
  * again until awoken by thread_unblock().
@@ -272,20 +301,20 @@ void thread_block(void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-bool
-thread_cmp_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+bool thread_compare_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result;
-    int newp= list_entry(new,struct thread, elem)->priority;
-    int oldp= list_entry(old,struct thread, elem)->priority;
-    if (newp>oldp){
-        result=true;
+    int newp = list_entry(new, struct thread, elem)->priority;
+    int oldp = list_entry(old, struct thread, elem)->priority;
+    if (newp > oldp)
+    {
+        result = true;
     }
-    else {
-    result=false;
+    else
+    {
+        result = false;
     }
     return result;
-    // return list_entry(new, struct thread, elem)->priority > list_entry(old, struct thread, elem)->priority;
 }
 void thread_unblock(struct thread *t)
 {
@@ -295,8 +324,7 @@ void thread_unblock(struct thread *t)
 
     old_level = intr_disable();
     ASSERT(t->status == THREAD_BLOCKED);
-    // list_push_back(&ready_list, &t->elem);
-    list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_cmp_priority, NULL);
+    list_insert_ordered(&ready_list, &t->elem, (list_less_func *)&thread_compare_priority, NULL);
     t->status = THREAD_READY;
     intr_set_level(old_level);
 }
@@ -365,7 +393,7 @@ void thread_yield(void)
     old_level = intr_disable();
     if (cur != idle_thread)
         // list_push_back(&ready_list, &cur->elem);
-        list_insert_ordered(&ready_list, &cur->elem, (list_less_func *)&thread_cmp_priority, NULL);
+        list_insert_ordered(&ready_list, &cur->elem, (list_less_func *)&thread_compare_priority, NULL);
 
     cur->status = THREAD_READY;
     schedule();
@@ -391,8 +419,19 @@ void thread_foreach(thread_action_func *func, void *aux)
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void thread_set_priority(int new_priority)
 {
-    thread_current()->priority = new_priority;
-    thread_yield();
+
+    enum intr_level old_level = intr_disable();
+    struct thread *t = thread_current();
+    int old_priority = t->priority;
+    t->base_priority = new_priority;
+
+    if (list_empty(&t->locks_priority) || t->base_priority > t->priority)
+    {
+        t->priority = new_priority;
+        thread_yield();
+    }
+
+    intr_set_level(old_level);
 }
 
 /* Returns the current thread's priority. */
@@ -517,8 +556,11 @@ init_thread(struct thread *t, const char *name, int priority)
     t->stack = (uint8_t *)t + PGSIZE;
     t->priority = priority;
     t->magic = THREAD_MAGIC;
+    t->base_priority = priority;
+    list_init(&t->locks_priority);
+    t->lock_waiting = NULL;
     // list_push_back(&all_list, &t->allelem);
-    list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&thread_cmp_priority, NULL);
+    list_insert_ordered(&all_list, &t->allelem, (list_less_func *)&thread_compare_priority, NULL);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

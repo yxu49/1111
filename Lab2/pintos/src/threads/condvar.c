@@ -72,15 +72,15 @@ condvar_init(struct condvar *cond)
  * we need to sleep. 
  */
 bool
-cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+condvar_compare_priority (const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
 {
     bool result;
 
-  struct semaphore *sema_a = list_entry (a, struct semaphore, elem);
-  struct semaphore *sema_b = list_entry (b, struct semaphore, elem);
-  int sema_a_p=list_entry(list_front(&sema_a->waiters),struct thread,elem)->priority;
-  int sema_b_p=list_entry(list_front(&sema_b->waiters),struct thread,elem)->priority;
-  if (sema_a_p>sema_b_p){
+  struct semaphore *sema_new = list_entry (new, struct semaphore, elem);
+  struct semaphore *sema_old = list_entry (old, struct semaphore, elem);
+  int sema_new_p=list_entry(list_front(&sema_new->waiters),struct thread,elem)->priority;
+  int sema_old_p=list_entry(list_front(&sema_old->waiters),struct thread,elem)->priority;
+  if (sema_new_p>sema_old_p){
       result=true;
   }
   else
@@ -101,7 +101,7 @@ condvar_wait(struct condvar *cond, struct lock *lock)
     semaphore_init(&waiter, 0);
     list_push_back(&cond->waiters, &waiter.elem);
     
-    // list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)cond_sema_cmp_priority, NULL);
+    // list_insert_ordered(&cond->waiters, &waiter.elem, (list_less_func *)condvar_compare_priority, NULL);
     
     lock_release(lock);
     semaphore_down(&waiter);
@@ -127,7 +127,7 @@ condvar_signal(struct condvar *cond, struct lock *lock UNUSED)
     ASSERT(lock_held_by_current_thread(lock));
 
     if (!list_empty(&cond->waiters)) {
-        list_sort (&cond->waiters, cond_sema_cmp_priority, NULL);
+        list_sort (&cond->waiters, condvar_compare_priority, NULL);
 
         semaphore_up(list_entry(list_pop_front(&cond->waiters), struct semaphore, elem));
     }

@@ -54,8 +54,7 @@
  * onerous, it's a good sign that a semaphore should be used,
  * instead of a lock. 
  */
-void
-lock_init(struct lock *lock)
+void lock_init(struct lock *lock)
 {
     ASSERT(lock != NULL);
 
@@ -73,15 +72,40 @@ lock_init(struct lock *lock)
  * interrupts disabled, but interrupts will be turned back on if
  * we need to sleep. 
  */
-void
-lock_acquire(struct lock *lock)
+void lock_acquire(struct lock *lock)
 {
+    struct thread *t = thread_current();
+    struct lock *l;
+    enum intr_level old_level;
+
     ASSERT(lock != NULL);
     ASSERT(!intr_context());
     ASSERT(!lock_held_by_current_thread(lock));
 
+    if (lock->holder != NULL)
+    {
+        t->lock_waiting = lock;
+        l = lock;
+        while (l && t->priority > l->max_priority)
+        {
+            l->max_priority = t->priority;
+            thread_donate_priority(l->holder);
+            l = l->holder->lock_waiting;
+        }
+    }
+
     semaphore_down(&lock->semaphore);
-    lock->holder = thread_current();
+
+    old_level = intr_disable();
+
+    t = thread_current();
+    t->lock_waiting = NULL;
+    lock->max_priority = t->priority;
+    lock_hold_thread(lock);
+
+    lock->holder = t;
+
+    intr_set_level(old_level);
 }
 
 /* 
@@ -92,14 +116,14 @@ lock_acquire(struct lock *lock)
  * This function will not sleep, so it may be called within an
  * interrupt handler. 
  */
-bool
-lock_try_acquire(struct lock *lock)
+bool lock_try_acquire(struct lock *lock)
 {
     ASSERT(lock != NULL);
     ASSERT(!lock_held_by_current_thread(lock));
 
     bool success = semaphore_try_down(&lock->semaphore);
-    if (success) {
+    if (success)
+    {
         lock->holder = thread_current();
     }
     return success;
@@ -112,23 +136,58 @@ lock_try_acquire(struct lock *lock)
  * make sense to try to release a lock within an interrupt
  * handler. 
  */
-void
-lock_release(struct lock *lock)
+void lock_release(struct lock *lock)
 {
     ASSERT(lock != NULL);
     ASSERT(lock_held_by_current_thread(lock));
-
+    lock_remove(lock);
     lock->holder = NULL;
     semaphore_up(&lock->semaphore);
 }
+/* Remove a lock. */
+void lock_remove(struct lock *lock)
+{
+    enum intr_level old_level = intr_disable();
+    list_remove(&lock->elem);
+    thread_update_priority(thread_current());
+    intr_set_level(old_level);
+}
+/* Let thread hold a lock */
+void lock_hold_thread(struct lock *lock)
+{
+    enum intr_level old_level = intr_disable();
+    struct thread *t= thread_current();
+    list_insert_ordered(&t->locks_priority, &lock->elem, lock_compare_priority, NULL);
 
+    if (lock->max_priority > t->priority)
+    {
+        t->priority = lock->max_priority;
+        thread_yield();
+    }
+
+    intr_set_level(old_level);
+}
 /* 
  * Returns true if the current thread holds LOCK, false otherwise.  
  * Note that testing whether some other thread holds a lock would be racy. 
  */
-bool
-lock_held_by_current_thread(const struct lock *lock)
+bool lock_held_by_current_thread(const struct lock *lock)
 {
     ASSERT(lock != NULL);
     return lock->holder == thread_current();
+}
+bool lock_compare_priority(const struct list_elem *new, const struct list_elem *old, void *aux UNUSED)
+{
+    bool result;
+    int new_lock_p = list_entry(new, struct lock, elem)->max_priority;
+    int old_lock_p = list_entry(old, struct lock, elem)->max_priority;
+    if (new_lock_p > old_lock_p)
+    {
+        result = true;
+    }
+    else
+    {
+        result = false;
+    }
+    return result;
 }

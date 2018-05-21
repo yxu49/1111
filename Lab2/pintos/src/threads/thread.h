@@ -89,7 +89,7 @@ struct thread {
     int priority; /* Priority. */
     struct list_elem allelem; /* List element for all threads list. */
     int base_priority;
-    struct list locks;
+    struct list locks_priority;
     struct lock *lock_waiting;
     /* Shared between thread.c and sempahore.c. */
     struct list_elem elem; /* List element. */
@@ -118,6 +118,7 @@ typedef void thread_func(void *aux);
 tid_t thread_create(const char *name, int priority, thread_func *, void *);
 
 void thread_block(void);
+bool thread_compare_priority(const struct list_elem *, const struct list_elem *, void *aux);
 void thread_unblock(struct thread *);
 
 struct thread *thread_current(void);
