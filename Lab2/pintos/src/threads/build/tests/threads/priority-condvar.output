@@ -1,0 +1,17 @@
+qemu-system-x86_64 -hda /tmp/kSpccVTtyF.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..........
+Kernel command line: -q run priority-condvar
+PiLo hda1
+Loading..........
+Kernel command line: -q run priority-condvar
+Kernel PANIC at ../../lib/kernel/list.c:252 in list_remove(): assertion `is_interior (elem)' failed.
+Call stack: 0xc0027758.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 0 ticks
+Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
+Console: 390 characters output
+Keyboard: 0 keys pressed
+Powering off...
