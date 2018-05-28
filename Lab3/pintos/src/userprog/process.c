@@ -72,7 +72,68 @@ push_command(const char *cmdline UNUSED, void **esp)
 
     // Word align with the stack pointer. 
     *esp = (void*) ((unsigned int) (*esp) & 0xfffffffc);
+    // const char *buffer = (const char *) palloc_get_page(0);
+    // char *bufferLoc = buffer;
+    // strlcpy(buffer, cmdline, PGSIZE);
+    // int argc = 0, len = 0, j = 0;
+    // char *token;
 
+    // while((token = strtok_r(buffer, " ", &buffer))){
+    //     		argc++;
+    //     }
+    // palloc_free_page(bufferLoc);
+        const char *buffer = (const char *) palloc_get_page(0);
+    char *bufferLoc = buffer;
+    strlcpy(buffer, cmdline, PGSIZE);
+    int argc = 0, len = 0, j = 0;
+    char *token;
+
+    while((token = strtok_r(buffer, " ", &buffer))){
+        		argc++;
+//        		memcpy(args, token, strlen(token));
+//        		args += strlen(token);
+        		//printf("%d\n", argc);
+        }
+    palloc_free_page(bufferLoc);
+
+    void *buff[argc + 1];
+
+
+
+    while((token = strtok_r(cmdline, " ", &cmdline))){
+    		len = strlen(token)+1;
+    		//printf("%s", token);
+    		*esp -= len;
+    		//printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+    		buff[j] = *esp;
+    		memcpy(*esp, token, len);
+    		j++;
+    }
+
+    *esp = (void*) ((unsigned int) (*esp) & 0xfffffffc);
+
+    for(int i = argc; i >= 0; i--){
+    		*esp -= 4;
+    		if(i == argc){
+    			*((int*) *esp) = 0;
+    		} else if(i == 0) {
+    			*((unsigned int*) *esp) = (unsigned int *)(buff[i]);
+    			buff[j] = *esp;
+    		} else {
+    			*((unsigned int*) *esp) = (unsigned int *)(buff[i]);
+    		}
+    }
+
+   *esp -= 4;
+   *((unsigned int*) *esp) = (unsigned int *)(buff[j]);
+   *esp -= 4;
+   *((int*) *esp) = argc;
+   *esp -= 4;
+   *((int*) *esp) = 0;
+
+    
+    // const char *buff = (const char *) palloc_get_page(0);
+    
     // Some of your CMPS111 Lab 3 code will go here.
     //
     // You'll be doing address arithmetic here and that's one of only a handful 
