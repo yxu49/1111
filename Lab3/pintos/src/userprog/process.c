@@ -86,6 +86,7 @@ push_command(const char *cmdline, void **esp)
         int tlen = strlen(token) + 1;
         memcpy(esp[argc++], token, tlen);
         printf("%d\n", argc);
+        printf("%d\n",esp[argc]);
         printf("%s", token);
     }
     *((int *)*esp) = argc;
