@@ -75,41 +75,41 @@ push_command(const char *cmdline, void **esp)
 
     // Word align with the stack pointer.
     *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
-    int len = strlen(cmdline) + 1;
-    char *token;
-    char rest[256];
-    char* tokens[256];
+    // int len = strlen(cmdline) + 1;
+    // char *token;
+    // char rest[256];
+    // char* tokens[256];
 
-    strlcpy(rest, cmdline, len);
+    // strlcpy(rest, cmdline, len);
 
-    char** esp_argv = (char**) (esp + 2);
-    int argc = 0;
-    while ((token = strtok_r(rest, " ", &rest)))
-    {
-        // int tlen = strlen(token) + 1;
-        // memcpy(esp[argc++], token, tlen);
-        // printf("%d\n", argc);
-        // printf("%d\n",esp[argc]);
-        // printf("%s", token);
-        argc++;
-    }
-    int j=0;
-     void *buff[argc + 1];
+    // char** esp_argv = (char**) (esp + 2);
+    // int argc = 0;
+    // while ((token = strtok_r(rest, " ", &rest)))
+    // {
+    //     // int tlen = strlen(token) + 1;
+    //     // memcpy(esp[argc++], token, tlen);
+    //     // printf("%d\n", argc);
+    //     // printf("%d\n",esp[argc]);
+    //     // printf("%s", token);
+    //     argc++;
+    // }
+    // int j=0;
+    //  void *buff[argc + 1];
 
-    while((token = strtok_r(cmdline, " ", &cmdline))){
-    		len = strlen(token)+1;
-    		//printf("%s", token);
-    		*esp -= len;
-    		//printf("Base Address: 0x%08x\n", (unsigned int) *esp);
-    		buff[j] = *esp;
-    		memcpy(*esp, token, len);
-    		j++;
-    }
+    // while((token = strtok_r(cmdline, " ", &cmdline))){
+    // 		len = strlen(token)+1;
+    // 		//printf("%s", token);
+    // 		*esp -= len;
+    // 		//printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+    // 		buff[j] = *esp;
+    // 		memcpy(*esp, token, len);
+    // 		j++;
+    // }
 
-    *((int *)*esp) = argc;
-    esp++;
-    *((char **)*esp) = esp + 1;
-    esp++;
+    // *((int *)*esp) = argc;
+    // esp++;
+    // *((char **)*esp) = esp + 1;
+    // esp++;
     
 
     // const char *buff = (const char *) palloc_get_page(0);
