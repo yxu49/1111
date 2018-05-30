@@ -1,5 +1,5 @@
 Copying tests/userprog/args-many to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/4L8vQu6zVm.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/6rdH5M6k2z.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading............
 Kernel command line: -q -f extract run 'args-many a b c d e f g h i j k l m n o p q r s t u v'
@@ -8,7 +8,7 @@ Pintos booting with 3,968 kB RAM...
 367 pages available in user pool.
 Calibrating timer...  419,020,800 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
-hda1: 193 sectors (96 kB), Pintos OS kernel (20)
+hda1: 194 sectors (97 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 94 sectors (47 kB), Pintos scratch (22)
 filesys: using hda2
@@ -20,8 +20,8 @@ Putting 'args-many' into the file system...
 Erasing ustar archive...
 Executing 'args-many a b c d e f g h i j k l m n o p q r s t u v':
 Execution of 'args-many a b c d e f g h i j k l m n o p q r s t u v' complete.
-Timer: 79 ticks
-Thread: 34 idle ticks, 45 kernel ticks, 0 user ticks
+Timer: 82 ticks
+Thread: 36 idle ticks, 46 kernel ticks, 0 user ticks
 hda2 (filesys): 188 reads, 187 writes
 hda3 (scratch): 93 reads, 2 writes
 Console: 966 characters output
