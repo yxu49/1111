@@ -65,6 +65,9 @@ static struct semaphore locking;
  * aligned with the stack pointer ESP. Should only be called after the ELF 
  * format binary has been loaded into the heap by load();
  */
+
+/*
+ ../utils/pintos -v -k -T 60 --qemu --filesys-size=2 -p build/tests/userprog/args-none -a args-none -- -q -f run args-none*/
 static void
 push_command(const char *cmdline, void **esp)
 {
