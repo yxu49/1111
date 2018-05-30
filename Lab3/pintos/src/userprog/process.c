@@ -78,25 +78,62 @@ push_command(const char *cmdline, void **esp)
     int len = strlen(cmdline) + 1;
     char *token;
     char rest[256];
-    char* tokens[256];
+    char *tokens[256];
 
     strlcpy(rest, cmdline, len);
 
-    char** esp_argv = (char**) (esp + 2);
+    char **esp_argv = (char **)(esp + 2);
     int argc = 0;
     while ((token = strtok_r(rest, " ", &rest)))
     {
-        int tlen = strlen(token) + 1;
-        memcpy(esp[argc++], token, tlen);
-        printf("%d\n", argc);
-        printf("%d\n",esp[argc]);
-        printf("%s", token);
+        // int tlen = strlen(token) + 1;
+        // memcpy(esp[argc++], token, tlen);
+        // printf("%d\n", argc);
+        // printf("%d\n",esp[argc]);
+        // printf("%s", token);
+        argc++;
     }
+
+    /*//*/
+    int j = 0;
+    void *buff[argc + 1];
+
+    while ((token = strtok_r(cmdline, " ", &cmdline)))
+    {
+        len = strlen(token) + 1;
+        //printf("%s", token);
+        *esp -= len;
+        //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+        buff[j] = *esp;
+        memcpy(*esp, token, len);
+        j++;
+    }
+    *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
+
+    for (int i = argc; i >= 0; i--)
+    {
+        *esp -= 4;
+        if (i == argc)
+        {
+            *((int *)*esp) = 0;
+        }
+        else if (i == 0)
+        {
+            *((unsigned int *)*esp) = (unsigned int *)(buff[i]);
+            buff[j] = *esp;
+        }
+        else
+        {
+            *((unsigned int *)*esp) = (unsigned int *)(buff[i]);
+        }
+    }
+
+    *esp -= 4;
+    *((unsigned int *)*esp) = (unsigned int *)(buff[j]);
+    *esp -= 4;
     *((int *)*esp) = argc;
-    esp++;
-    *((char **)*esp) = esp + 1;
-    esp++;
-    
+    *esp -= 4;
+    *((int *)*esp) = 0;
 
     // const char *buff = (const char *) palloc_get_page(0);
 
@@ -126,10 +163,19 @@ tid_t process_execute(const char *cmdline)
         return TID_ERROR;
 
     strlcpy(cmdline_copy, cmdline, PGSIZE);
+/**/
+    const char *buffer = (const char *)palloc_get_page(0);
+    char *bufferLoc = buffer;
+    strlcpy(buffer, cmdline, PGSIZE);
+    char *token;
+    token = strtok_r(buffer, " ", &buffer);
 
+    struct sync *sync = sync_init(cmdline_copy, thread_current());
+/**/
     // Create a Kernel Thread for the new process
     tid_t tid = thread_create(cmdline, PRI_DEFAULT, start_process, cmdline_copy);
-
+  palloc_free_page(bufferLoc);
+  semaphore_down(&sync->sema);
     // CMPS111 Lab 3 : The "parent" thread immediately returns after creating
     // the child. To get ANY of the tests passing, you need to synchronise the
     // activity of the parent and child threads.
@@ -145,6 +191,14 @@ tid_t process_execute(const char *cmdline)
 static void
 start_process(void *cmdline)
 {
+    	struct thread *cur = thread_current();
+	struct sync* sync = _sync;
+
+	struct child* child = child_init(cur->tid, cur);
+	list_push_back(&(sync->parent->children), &(child->syncelem));
+
+	cur->parent = sync->parent;
+
     // Initialize interrupt frame and load executable.
     struct intr_frame pif;
     memset(&pif, 0, sizeof pif);
@@ -152,6 +206,14 @@ start_process(void *cmdline)
     pif.gs = pif.fs = pif.es = pif.ds = pif.ss = SEL_UDSEG;
     pif.cs = SEL_UCSEG;
     pif.eflags = FLAG_IF | FLAG_MBS;
+
+const char *buffer = (const char *) palloc_get_page(0);
+    char *bufferLoc = buffer;
+    strlcpy(buffer, sync->cmdline, PGSIZE);
+    char *token;
+    token = strtok_r(buffer, " ", &buffer);
+
+
 
     bool success = load(cmdline, &pif.eip, &pif.esp);
     if (success)
@@ -164,6 +226,9 @@ start_process(void *cmdline)
     {
         thread_exit();
     }
+
+
+    semaphore_up(&(sync->sema));
 
     // Start the user process by simulating a return from an
     // interrupt, implemented by intr_exit (in threads/intr-stubs.S).
@@ -188,7 +253,35 @@ start_process(void *cmdline)
    For now, it does nothing. */
 int process_wait(tid_t child_tid UNUSED)
 {
-    return -1;
+    // return -1;
+    struct child* child;
+	struct thread *t = thread_current();
+	struct list_elem *e;
+	for (e = list_begin (&(t->children)); e != list_end (&(t->children)); e = list_next (e)) {
+		child = list_entry (e, struct child, syncelem);
+		if(child->tid == child_tid){
+			break;
+		}
+	}
+
+
+	if(child == NULL){
+		return -1;
+	}
+
+	struct thread* child_thread = child->child;
+
+	if(child->wait){
+		return -1;
+	} else {
+		child->wait = true;
+	}
+
+	semaphore_down(&child_thread->syncsema);
+
+	//list_remove(e); ????????????? Why is this true where else should I remove the file? If the child has been terminated isnt it normal that I remove the child?
+
+	return child->exitcode;
 }
 
 /* Free the current process's resources. */
@@ -199,6 +292,8 @@ void process_exit(void)
 
     /* Destroy the current process's page directory and switch back
        to the kernel-only page directory. */
+        semaphore_up(&cur->syncsema);
+        
     pd = cur->pagedir;
     if (pd != NULL)
     {
