@@ -1,6 +1,6 @@
 Copying tests/userprog/wait-simple to scratch partition...
 Copying tests/userprog/child-simple to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/rLm9HAx8sB.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/zqS4DyqzfX.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading............
 Kernel command line: -q -f extract run wait-simple
@@ -22,8 +22,8 @@ Putting 'child-simple' into the file system...
 Erasing ustar archive...
 Executing 'wait-simple':
 Execution of 'wait-simple' complete.
-Timer: 82 ticks
-Thread: 33 idle ticks, 49 kernel ticks, 0 user ticks
+Timer: 87 ticks
+Thread: 39 idle ticks, 48 kernel ticks, 0 user ticks
 hda2 (filesys): 375 reads, 372 writes
 hda3 (scratch): 185 reads, 2 writes
 Console: 889 characters output
