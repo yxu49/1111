@@ -69,48 +69,56 @@ static bool load(const char *cmdline, void (**eip)(void), void **esp);
 /*
  ../utils/pintos -v -k -T 60 --qemu --filesys-size=2 -p build/tests/userprog/args-none -a args-none -- -q -f run args-none*/
 static void
-push_command(const char *cmdline UNUSED, void **esp)
+push_command(const char *cmdline, void **esp)
 {
     printf("Base Address: 0x%08x\n", (unsigned int)*esp);
 
     // Word align with the stack pointer.
     *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
-    // int len = strlen(cmdline) + 1;
-    // char *token;
-    // char rest[256];
-    // char* tokens[256];
+    int len = strlen(cmdline) + 1;
+    char *token;
+    char rest[256];
+    char *tokens[256];
 
-    // strlcpy(rest, cmdline, len);
+    strlcpy(rest, cmdline, len);
 
-    // char** esp_argv = (char**) (esp + 2);
-    // int argc = 0;
-    // while ((token = strtok_r(rest, " ", &rest)))
+    char **esp_argv = (char **)(esp + 2);
+    int argc = 0;
+    while ((token = strtok_r(rest, " ", &rest)))
+    {
+
+        int tlen = strlen(token) + 1;
+        memcpy(esp[argc++], token, tlen);
+        printf(esp[argc]);
+        // printf("%d\n", argc);
+        // printf("%d\n",esp[argc]);
+        // printf("%s", token);
+        argc++;
+         }
+    int j = 0;
+    void *buff[argc + 1];
+
+    // while ((token = strtok_r(cmdline, " ", &cmdline)))
     // {
-    //     // int tlen = strlen(token) + 1;
-    //     // memcpy(esp[argc++], token, tlen);
-    //     // printf("%d\n", argc);
-    //     // printf("%d\n",esp[argc]);
-    //     // printf("%s", token);
-    //     argc++;
+    //     len = strlen(token) + 1;
+    //     //printf("%s", token);
+    //     *esp -= len;
+    //     //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+    //     buff[j] = *esp;
+    //     memcpy(*esp, token, len);
+    //     j++;
     // }
-    // int j=0;
-    //  void *buff[argc + 1];
+    //argv
+    *esp -= 4;
+    *((void **)*esp) = *esp + 4;
 
-    // while((token = strtok_r(cmdline, " ", &cmdline))){
-    // 		len = strlen(token)+1;
-    // 		//printf("%s", token);
-    // 		*esp -= len;
-    // 		//printf("Base Address: 0x%08x\n", (unsigned int) *esp);
-    // 		buff[j] = *esp;
-    // 		memcpy(*esp, token, len);
-    // 		j++;
-    // }
+    // argc
+    *esp -= 4;
+    *((int *)*esp) = argc;
 
-    // *((int *)*esp) = argc;
-    // esp++;
-    // *((char **)*esp) = esp + 1;
-    // esp++;
-    
+    // return address
+    *esp = *esp - 4;
+    *((void **)*esp) = 0;
 
     // const char *buff = (const char *) palloc_get_page(0);
 
