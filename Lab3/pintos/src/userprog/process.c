@@ -59,7 +59,7 @@
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
-
+static struct semaphore locking;
 /*
  * Push the command and arguments found in CMDLINE onto the stack, world 
  * aligned with the stack pointer ESP. Should only be called after the ELF 
@@ -85,12 +85,14 @@ push_command(const char *cmdline, void **esp)
     {
         int tlen = strlen(token) + 1;
         memcpy(esp[argc++], token, tlen);
+        printf("%d\n", argc);
+        printf("%s", token);
     }
     *((int *)*esp) = argc;
     esp++;
     *((char **)*esp) = esp + 1;
     esp++;
-
+    
 
     // const char *buff = (const char *) palloc_get_page(0);
 
