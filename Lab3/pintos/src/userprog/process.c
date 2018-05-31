@@ -69,7 +69,7 @@ static bool load(const char *cmdline, void (**eip)(void), void **esp);
 /*
  ../utils/pintos -v -k -T 60 --qemu --filesys-size=2 -p build/tests/userprog/args-none -a args-none -- -q -f run args-none*/
 static void
-push_command(const char *cmdline, void **esp)
+push_command(const char *cmdline UNUSED, void **esp)
 {
     printf("Base Address: 0x%08x\n", (unsigned int)*esp);
 
