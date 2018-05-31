@@ -73,56 +73,68 @@ push_command(const char *cmdline, void **esp)
 {
     printf("Base Address: 0x%08x\n", (unsigned int)*esp);
 
+
+
+
     // Word align with the stack pointer.
     *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
     // printf("%ld\n", (long)esp);
+    *((int *)*esp) = 0;
 
-    int len = strlen(cmdline) + 1;
-    char *token;
-    char rest[256];
-    char tokens[256][256];
 
-    strlcpy(rest, cmdline, len);
+    esp -= 4;//argv
+    *esp = esp + 4;
+    esp -= 4;
+    *((int *)*esp) = 0;//argc
+    esp -= 4;
+    *((int *)*esp) = 0;//return address
+    
+    // int len = strlen(cmdline) + 1;
+    // char *token;
+    // char rest[256];
+    // char tokens[256][256];
 
-    char **esp_argv = (char **)(esp - 2);
-    int argc = 0;
-    while ((token = strtok_r(rest, " ", &rest)))
-    {
+    // strlcpy(rest, cmdline, len);
 
-        int tlen = strlen(token) + 1;
-        strlcpy(tokens[argc++], token, tlen);
+    // char **esp_argv = (char **)(esp - 2);
+    // int argc = 0;
+    // while ((token = strtok_r(rest, " ", &rest)))
+    // {
 
-        // memcpy(esp[argc++], token, tlen);
+    // int tlen = strlen(token) + 1;
+    // strlcpy(tokens[argc++], token, tlen);
 
-        // printf("%d\n", argc);
-        // printf("%d\n",esp[argc]);
-        // printf("%s", token);
-        // argc++;
-    }
+    // // memcpy(esp[argc++], token, tlen);
+
+    // // printf("%d\n", argc);
+    // printf("%d\n",esp[argc]);
+    // printf("%s", token);
+    // argc++;
+    // }
     // int j = 0;
     // void *buff[argc + 1];
-    char **argv_container = (char **)esp;
-    for (int i = argc - 1; i >= 0; i--)
-    {
-        memcpy(*argv_container, tokens[i], strlen(tokens[i]));
+    // char **argv_container = (char **)esp;
+    // for (int i = argc - 1; i >= 0; i--)
+    // {
+    //     memcpy(*argv_container, tokens[i], strlen(tokens[i]));
 
-        argv_container -= 4;
-    }
-    *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
+    //     argv_container -= 4;
+    // }
+    // *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
 
-    for (int i = argc - 1; i >= 0; i--)
-    {   
+    // for (int i = argc - 1; i >= 0; i--)
+    // {
 
-     
-        if (i==argc){
-               argv_container -= 4;
-            *((int*)*argv_container)=0;
-        }else
-        {
-               argv_container -= 4;
-
-        }
-    }
+    //     if (i == argc)
+    //     {
+    //         argv_container -= 4;
+    //         *((int *)*argv_container) = 0;
+    //     }
+    //     else
+    //     {
+    //         argv_container -= 4;
+    //     }
+    // }
     // while ((token = strtok_r(cmdline, " ", &cmdline)))
     // {
     //     len = strlen(token) + 1;
@@ -134,18 +146,18 @@ push_command(const char *cmdline, void **esp)
     //     j++;
     // }
     //argv
-    *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
+    // *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
 
-    *esp -= 4;
-    *((void **)*esp) = *esp + 4;
+    // *esp -= 4;
+    // *((void **)*esp) = *esp + 4;
 
-    // argc
-    *esp -= 4;
-    *((int *)*esp) = argc;
+    // // argc
+    // *esp -= 4;
+    // *((int *)*esp) = argc;
 
-    // return address
-    *esp = *esp - 4;
-    *((void **)*esp) = 0;
+    // // return address
+    // *esp = *esp - 4;
+    // *((void **)*esp) = 0;
 
     // const char *buff = (const char *) palloc_get_page(0);
 
