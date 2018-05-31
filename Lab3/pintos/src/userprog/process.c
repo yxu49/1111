@@ -71,7 +71,7 @@ static bool load(const char *cmdline, void (**eip)(void), void **esp);
 static void
 push_command(const char *cmdline UNUSED, void **esp)
 {
-    printf("Base Address: 0x%08x\n", (unsigned int)*esp);
+    // printf("Base Address: 0x%08x\n", (unsigned int)*esp);
     int len = strlen(cmdline) + 1;
     memcpy(*esp, cmdline, len);
     void **arg_location = esp;
