@@ -111,22 +111,29 @@ push_command(const char *cmdline, void **esp)
     *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
 
     for (int i = argc - 1; i >= 0; i--)
-{
-    argv_container-=4;
+    {   
 
-    
-}
-        // while ((token = strtok_r(cmdline, " ", &cmdline)))
-        // {
-        //     len = strlen(token) + 1;
-        //     //printf("%s", token);
-        //     *esp -= len;
-        //     //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
-        //     buff[j] = *esp;
-        //     memcpy(*esp, token, len);
-        //     j++;
-        // }
-        //argv
+     
+        if (i==argc){
+               argv_container -= 4;
+            *((int*)*argv_container)=0;
+        }else
+        {
+               argv_container -= 4;
+
+        }
+    }
+    // while ((token = strtok_r(cmdline, " ", &cmdline)))
+    // {
+    //     len = strlen(token) + 1;
+    //     //printf("%s", token);
+    //     *esp -= len;
+    //     //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+    //     buff[j] = *esp;
+    //     memcpy(*esp, token, len);
+    //     j++;
+    // }
+    //argv
     *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
 
     *esp -= 4;
