@@ -72,23 +72,26 @@ static void
 push_command(const char *cmdline UNUSED, void **esp)
 {
     printf("Base Address: 0x%08x\n", (unsigned int)*esp);
-
-
-
-
+    int len = strlen(cmdline) + 1;
+    memcpy(*esp, cmdline, len);
+    void **arg_location = esp;
+    esp -= 4;
     // Word align with the stack pointer.
     *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
     // printf("%ld\n", (long)esp);
     *((int *)*esp) = 0;
+    esp -= 4; 
 
+    *esp = (void *)arg_location;
+    esp -= 4;
 
-    esp -= 4;//argv
-    *esp = esp + 4;
+    *esp = esp + 4;//argv
     esp -= 4;
-    *((int *)*esp) = 0;//argc
+
+    *((int *)*esp) = 1; //argc
     esp -= 4;
-    *((int *)*esp) = 0;//return address
-    
+    *((int *)*esp) = 0; //return address
+
     // int len = strlen(cmdline) + 1;
     // char *token;
     // char rest[256];
