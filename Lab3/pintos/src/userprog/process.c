@@ -75,41 +75,60 @@ push_command(const char *cmdline, void **esp)
 
     // Word align with the stack pointer.
     *esp = (void *)((unsigned int)(*esp) & 0xfffffffc);
-        printf("%ld\n", (long) esp);
-    
+    // printf("%ld\n", (long)esp);
+
     int len = strlen(cmdline) + 1;
     char *token;
     char rest[256];
-    char *tokens[256];
+    char tokens[256][256];
 
     strlcpy(rest, cmdline, len);
 
-    char **esp_argv = (char **)(esp + 2);
+    char **esp_argv = (char **)(esp - 2);
     int argc = 0;
     while ((token = strtok_r(rest, " ", &rest)))
     {
 
         int tlen = strlen(token) + 1;
-        memcpy(esp[argc++], token, tlen);
+        strlcpy(tokens[argc++], token, tlen);
+
+        // memcpy(esp[argc++], token, tlen);
+
         // printf("%d\n", argc);
         // printf("%d\n",esp[argc]);
         // printf("%s", token);
-        argc++;
-         }
-    int j = 0;
-    void *buff[argc + 1];
+        // argc++;
+    }
+    // int j = 0;
+    // void *buff[argc + 1];
+    char **argv_container = (char **)esp;
+    for (int i = argc - 1; i >= 0; i--)
+    {
+        memcpy(*argv_container, tokens[i], strlen(tokens[i]));
 
-    // while ((token = strtok_r(cmdline, " ", &cmdline)))
-    // {
-    //     len = strlen(token) + 1;
-    //     //printf("%s", token);
-    //     *esp -= len;
-    //     //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
-    //     buff[j] = *esp;
-    //     memcpy(*esp, token, len);
-    //     j++;
-    // }
-    //argv
+        argv_container -= 4;
+    }
+    *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
+
+    for (int i = argc - 1; i >= 0; i--)
+{
+    argv_container-=4;
+
+    
+}
+        // while ((token = strtok_r(cmdline, " ", &cmdline)))
+        // {
+        //     len = strlen(token) + 1;
+        //     //printf("%s", token);
+        //     *esp -= len;
+        //     //printf("Base Address: 0x%08x\n", (unsigned int) *esp);
+        //     buff[j] = *esp;
+        //     memcpy(*esp, token, len);
+        //     j++;
+        // }
+        //argv
+    *esp = (void *)((unsigned int)(*argv_container) & 0xfffffffc);
+
     *esp -= 4;
     *((void **)*esp) = *esp + 4;
 
